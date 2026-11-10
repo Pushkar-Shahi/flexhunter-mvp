@@ -4,13 +4,15 @@ import TopBar from './components/TopBar';
 import ProfileAvailabilityView from './components/ProfileAvailabilityView';
 import MatchFeedView from './components/MatchFeedView';
 import ApplicationTrackerView from './components/ApplicationTrackerView';
+import SavedJobsView from './components/SavedJobsView';
+import ResumeStudioView from './components/ResumeStudioView';
 import ExtensionSimulationView from './components/ExtensionSimulationView';
 import EmailDraftModal from './components/EmailDraftModal';
 import { initialApplications, initialJobsData } from './data/mockData';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function App() {
-  // Navigation: 'settings' (Screen 1) | 'feed' (Screen 2) | 'tracker' (Screen 3)
+  // Navigation: 'settings' | 'feed' | 'tracker' | 'saved' | 'resume'
   const [activeView, setActiveView] = useState('settings');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -31,7 +33,7 @@ export default function App() {
   // Toast State
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Applications CRM State (Screen 3)
+  // Applications CRM State (Screen 3 & Saved Jobs)
   const [applications, setApplications] = useState(() => {
     const saved = localStorage.getItem('flexhunter_exact_apps');
     if (saved) {
@@ -63,7 +65,7 @@ export default function App() {
     const exists = applications.find((a) => a.title === job.title);
     if (exists) {
       setApplications(applications.filter((a) => a.title !== job.title));
-      showToast(`Removed "${job.title}" from board.`);
+      showToast(`Removed "${job.title}" from saved list.`);
     } else {
       const newCard = {
         id: `app-saved-${Date.now()}`,
@@ -75,8 +77,14 @@ export default function App() {
         pillType: "neutral"
       };
       setApplications([newCard, ...applications]);
-      showToast(`Saved "${job.title}" to your Kanban board!`);
+      showToast(`Saved "${job.title}" to your saved collection!`);
     }
+  };
+
+  // Remove from Saved
+  const handleRemoveFromSaved = (appId) => {
+    setApplications(applications.filter((a) => a.id !== appId));
+    showToast("Role removed from saved list.");
   };
 
   // Open Extension from Job
@@ -111,20 +119,27 @@ export default function App() {
         return 'Discover / Match Feed';
       case 'tracker':
         return 'Tracker / Applications';
+      case 'saved':
+        return 'Collections / Saved Jobs';
+      case 'resume':
+        return 'Studio / Resume & Portfolio';
       default:
         return 'FlexHunter';
     }
   };
 
+  const savedApplications = applications.filter((a) => a.status === 'saved');
+
   return (
     <div className="flex h-screen bg-[#fcfcfc] text-slate-800 font-['Plus_Jakarta_Sans',sans-serif] overflow-hidden antialiased">
       
-      {/* Exact Light Wireframe Sidebar from Images 1, 2, 3 */}
+      {/* Sidebar with all 5 active views */}
       <Sidebar
         activeView={activeView}
         setActiveView={setActiveView}
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
+        savedCount={savedApplications.length}
         onOpenExtension={() => {
           setExtensionTargetJob(initialJobsData[1]);
           setIsExtensionOpen(true);
@@ -180,6 +195,24 @@ export default function App() {
               setApplications={setApplications}
               onOpenExtensionForJob={handleApplyViaExtension}
               onOpenDraftEmail={(app) => setDraftEmailApp(app)}
+            />
+          )}
+
+          {/* View: Saved Jobs */}
+          {activeView === 'saved' && (
+            <SavedJobsView
+              savedApplications={savedApplications}
+              onApplyViaExtension={handleApplyViaExtension}
+              onRemoveFromSaved={handleRemoveFromSaved}
+              onGoToFeed={() => setActiveView('feed')}
+            />
+          )}
+
+          {/* View: Resume Studio */}
+          {activeView === 'resume' && (
+            <ResumeStudioView
+              maxHours={maxHours}
+              userSchedule="afternoon"
             />
           )}
 

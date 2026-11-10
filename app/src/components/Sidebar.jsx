@@ -15,14 +15,15 @@ export default function Sidebar({
   setActiveView, 
   isCollapsed, 
   setIsCollapsed,
-  onOpenExtension 
+  onOpenExtension,
+  savedCount 
 }) {
   const menuItems = [
     { id: 'feed', label: 'Match Feed', icon: Compass },
     { id: 'tracker', label: 'Application Tracker', icon: Kanban },
     { id: 'settings', label: 'Availability & Preferences', icon: Sliders },
-    { id: 'saved', label: 'Saved Jobs', icon: Bookmark },
-    { id: 'resume', label: 'Resume Studio', icon: FileText }
+    { id: 'saved', label: 'Saved Jobs', icon: Bookmark, badge: savedCount > 0 ? savedCount : null },
+    { id: 'resume', label: 'Resume Studio', icon: FileText, badge: 'AI' }
   ];
 
   return (
@@ -47,7 +48,7 @@ export default function Sidebar({
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-6 h-6 rounded-full border border-slate-200 text-slate-400 hover:text-slate-800 flex items-center justify-center text-xs"
+            className="w-6 h-6 rounded-full border border-slate-200 text-slate-400 hover:text-slate-800 flex items-center justify-center text-xs cursor-pointer"
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
@@ -62,26 +63,32 @@ export default function Sidebar({
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  if (item.id === 'saved') {
-                    setActiveView('tracker');
-                  } else {
-                    setActiveView(item.id);
-                  }
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
+                onClick={() => setActiveView(item.id)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   isActive
                     ? 'bg-slate-900 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
                 title={isCollapsed ? item.label : undefined}
               >
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
-                  isActive ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'
-                }`}>
-                  <Icon className="w-3.5 h-3.5" />
+                <div className="flex items-center space-x-3 overflow-hidden">
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                    isActive ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
+                  {!isCollapsed && <span className="truncate">{item.label}</span>}
                 </div>
-                {!isCollapsed && <span className="truncate">{item.label}</span>}
+
+                {!isCollapsed && item.badge && (
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    isActive
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-slate-100 text-slate-600 border border-slate-200'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -90,7 +97,7 @@ export default function Sidebar({
 
       {/* Bottom Section */}
       <div className="p-3 space-y-3">
-        {/* Browser Extension Card (Exact Match to Figma Wireframe) */}
+        {/* Browser Extension Card */}
         {!isCollapsed && (
           <div className="p-3.5 bg-slate-50 border border-dashed border-slate-300 rounded-2xl text-left space-y-2">
             <div>

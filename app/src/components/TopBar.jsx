@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, Globe } from 'lucide-react';
+import { Search, Globe } from 'lucide-react';
 
 export default function TopBar({ 
   breadcrumb, 
@@ -34,7 +34,7 @@ export default function TopBar({
           onClick={onOpenExtension}
           className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors"
         >
-          <Globe className="w-3.5 h-3.5" />
+          <Globe className="w-3.5 h-3.5 text-slate-600" />
           <span>Extension</span>
         </button>
 
