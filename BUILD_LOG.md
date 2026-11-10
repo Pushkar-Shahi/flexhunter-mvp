@@ -79,3 +79,25 @@ This build log documents every step of development, tracking prompts used, what 
   - `npm run build`: Success in 1.50s (0 errors).
   - Tested both views live via browser screenshots (`resume_studio_screenshot.png` and `saved_jobs_screenshot.png`).
 * **Outcome**: Both views fully operational. Git commit `c14f17c`.
+
+---
+
+## Session 7: Full Dark Mode Implementation
+* **Prompt**: "we need a dark mode too"
+* **Date**: 2026-11-10
+* **What Worked**:
+  - Configured `darkMode: 'class'` in `app/tailwind.config.js`.
+  - Added theme state (`'light' | 'dark'`) and sync with `localStorage` and `document.documentElement.classList` in `App.jsx`.
+  - Added a dedicated Sun / Moon theme toggle button in `TopBar.jsx`.
+  - Applied cohesive dark palettes (`bg-slate-900`, `bg-slate-950`, `border-slate-800`, `text-slate-100`) across all 5 views and modals:
+    1. `ProfileAvailabilityView.jsx` (Constraints, lecture matrix, and skills upload)
+    2. `MatchFeedView.jsx` (Split-feed, circular match badges, AI breakdown panel)
+    3. `ApplicationTrackerView.jsx` (5-column Kanban board, cards, and urgency pills)
+    4. `ExtensionSimulationView.jsx` (Simulated browser frame and 380px extension sidebar)
+    5. `SavedJobsView.jsx` (Saved card collection and actions)
+    6. `ResumeStudioView.jsx` (ATS meter, skills cloud, and tailored pitch generator)
+    7. `EmailDraftModal.jsx` (Follow-up email generator overlay)
+* **Verification**:
+  - `npm run build`: Compiled production bundle in 1.46s with 0 errors.
+  - Headless Chrome testing captured 7 high-resolution screenshots across all screens verifying theme contrast and aesthetic fidelity.
+* **Outcome**: Full dark mode operational. Git commit `44d449f`.
