@@ -16,6 +16,11 @@ export default function App() {
   const [activeView, setActiveView] = useState('settings');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
+  // Theme State: 'light' | 'dark'
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('flexhunter_theme') || 'light';
+  });
+
   // Search Query
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -45,6 +50,16 @@ export default function App() {
     }
     return initialApplications;
   });
+
+  // Sync theme with <html> class and localStorage
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('flexhunter_theme', theme);
+  }, [theme]);
 
   // LocalStorage Persistence
   useEffect(() => {
@@ -131,7 +146,7 @@ export default function App() {
   const savedApplications = applications.filter((a) => a.status === 'saved');
 
   return (
-    <div className="flex h-screen bg-[#fcfcfc] text-slate-800 font-['Plus_Jakarta_Sans',sans-serif] overflow-hidden antialiased">
+    <div className="flex h-screen bg-[#fcfcfc] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-['Plus_Jakarta_Sans',sans-serif] overflow-hidden antialiased transition-colors">
       
       {/* Sidebar with all 5 active views */}
       <Sidebar
@@ -149,11 +164,13 @@ export default function App() {
       {/* Main View Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* Top Bar with Breadcrumb, Search, Extension button, Avatar */}
+        {/* Top Bar with Breadcrumb, Search, Theme Toggle, Extension button, Avatar */}
         <TopBar
           breadcrumb={getBreadcrumb()}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          theme={theme}
+          onToggleTheme={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
           onOpenExtension={() => {
             setExtensionTargetJob(initialJobsData[1]);
             setIsExtensionOpen(true);

@@ -41,24 +41,24 @@ export default function EmailDraftModal({ application, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden my-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-6">
         
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <Mail className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   {isOffer ? 'Draft Reply / Acceptance Email' : isInterview ? 'Draft Interview Follow-Up' : 'Draft Follow-Up Email'}
                 </h3>
-                <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                   AI-Tailored
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Tailored for {application.company} · {application.title}
               </p>
             </div>
@@ -66,7 +66,7 @@ export default function EmailDraftModal({ application, onClose }) {
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -77,8 +77,8 @@ export default function EmailDraftModal({ application, onClose }) {
           
           {/* Subject Field */}
           <div className="space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Subject Line</span>
-            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Subject Line</span>
+            <div className="p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-100">
               {subject}
             </div>
           </div>
@@ -86,19 +86,19 @@ export default function EmailDraftModal({ application, onClose }) {
           {/* Body Field */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Message</span>
-              <span className="text-[10px] text-slate-400 font-medium">Ready to send</span>
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Email Message</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Ready to send</span>
             </div>
             <textarea
               readOnly
               rows="11"
               value={body}
-              className="w-full text-xs p-3 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-700 font-mono leading-relaxed focus:outline-none"
+              className="w-full text-xs p-3 bg-slate-50/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 font-mono leading-relaxed focus:outline-none"
             />
           </div>
 
           {/* Quick Context Box */}
-          <div className="p-3 bg-blue-50/60 border border-blue-200/80 rounded-xl flex items-center space-x-2 text-xs text-blue-900">
+          <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-xl flex items-center space-x-2 text-xs text-blue-900 dark:text-blue-300">
             <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
             <span>
               Politely references your afternoon class schedule and links directly to your student portfolio.
@@ -108,10 +108,10 @@ export default function EmailDraftModal({ application, onClose }) {
         </div>
 
         {/* Footer Actions */}
-        <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <div className="px-5 py-3.5 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
             Close
           </button>
@@ -121,7 +121,7 @@ export default function EmailDraftModal({ application, onClose }) {
             className={`flex items-center space-x-1.5 px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs ${
               copied
                 ? 'bg-emerald-600 text-white'
-                : 'bg-black hover:bg-slate-800 text-white active:scale-98'
+                : 'bg-blue-600 hover:bg-blue-700 text-white active:scale-98'
             }`}
           >
             {copied ? (
