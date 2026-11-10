@@ -6,7 +6,7 @@ import JobCard from './components/JobCard';
 import JobDetailModal from './components/JobDetailModal';
 import KanbanBoard from './components/KanbanBoard';
 import { initialJobs } from './data/jobs';
-import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function App() {
   // User Constraints (Feature 2)
@@ -20,6 +20,7 @@ export default function App() {
   // Strict Filters (Feature 1)
   const [remoteOnly, setRemoteOnly] = useState(true);
   const [partTimeOnly, setPartTimeOnly] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Navigation & Modal
@@ -27,9 +28,9 @@ export default function App() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
-  // CRM Applications State (Feature 4)
+  // CRM Applications State (Feature 4: Saved / Applied / Interview)
   const [applications, setApplications] = useState(() => {
-    const saved = localStorage.getItem('flexhunter_apps');
+    const saved = localStorage.getItem('flexhunter_wireframe_apps');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -37,40 +38,59 @@ export default function App() {
         console.error(e);
       }
     }
-    // Initial demo seed so student sees pipeline immediately in action
+    // Seed matching the wireframe sketch:
     return [
       {
-        id: 'app-seed-1',
-        job: initialJobs[0],
+        id: 'app-seed-saved',
+        job: initialJobs[1], // PixelCraft Design
+        status: 'saved',
+        savedAt: new Date().toISOString()
+      },
+      {
+        id: 'app-seed-applied-1',
+        job: initialJobs[0], // Google SWE Intern
         status: 'applied',
         appliedAt: new Date().toISOString(),
-        note: 'Submitted Figma portfolio emphasizing afternoon bandwidth.'
+        note: 'Submitted resume and highlighted afternoon hours.'
+      },
+      {
+        id: 'app-seed-applied-2',
+        job: initialJobs[2], // GrowthPulse Marketing
+        status: 'applied',
+        appliedAt: new Date().toISOString(),
+        note: 'Applied with writing portfolio.'
+      },
+      {
+        id: 'app-seed-interview',
+        job: initialJobs[3], // NeuralNext AI
+        status: 'interview',
+        appliedAt: new Date().toISOString(),
+        note: 'Invited to take home async benchmark task.'
       }
     ];
   });
 
-  // Persist state to LocalStorage
+  // Save to LocalStorage
   useEffect(() => {
     localStorage.setItem('flexhunter_schedule', userSchedule);
     localStorage.setItem('flexhunter_max_hours', maxHours.toString());
   }, [userSchedule, maxHours]);
 
   useEffect(() => {
-    localStorage.setItem('flexhunter_apps', JSON.stringify(applications));
+    localStorage.setItem('flexhunter_wireframe_apps', JSON.stringify(applications));
   }, [applications]);
 
-  // Toast auto-dismiss
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Toggle Save / Bookmark
+  // Toggle Save
   const handleToggleSave = (job) => {
     const existing = applications.find((a) => a.job.id === job.id);
     if (existing) {
       setApplications(applications.filter((a) => a.job.id !== job.id));
-      showToast(`Removed "${job.title}" from your pipeline.`);
+      showToast(`Removed "${job.title}" from pipeline.`);
     } else {
       const newApp = {
         id: `app-${Date.now()}`,
@@ -79,7 +99,7 @@ export default function App() {
         savedAt: new Date().toISOString()
       };
       setApplications([...applications, newApp]);
-      showToast(`Saved "${job.title}" to your Pipeline.`);
+      showToast(`Saved "${job.title}" to your Kanban!`);
     }
   };
 
@@ -103,33 +123,34 @@ export default function App() {
       setApplications([...applications, newApp]);
     }
     setSelectedJob(null);
-    showToast(`Application sent! Added to 'Applied' column with 5-day follow-up reminder.`);
+    showToast(`Applied! Added to 'Applied' column with a 5-day follow-up reminder.`);
   };
 
-  // Update Status in CRM
+  // Move status in Kanban
   const handleUpdateStatus = (appId, newStatus) => {
     setApplications(
       applications.map((a) => (a.id === appId ? { ...a, status: newStatus } : a))
     );
   };
 
-  // Remove from CRM
+  // Remove from Kanban
   const handleRemoveApplication = (appId) => {
     setApplications(applications.filter((a) => a.id !== appId));
-    showToast('Application removed from tracker.');
+    showToast('Role removed from pipeline.');
   };
 
-  // Filtering Logic (Feature 1 & Feature 2)
+  // Filter Logic (Features 1 & 2)
   const filteredJobs = initialJobs.filter((job) => {
-    // 1. Strict Remote Filter
-    if (remoteOnly && !job.isRemote) {
-      return false;
-    }
-    // 2. Strict Part-Time Filter
-    if (partTimeOnly && job.employmentType !== 'Part-Time') {
-      return false;
-    }
-    // 3. Search Query Filter
+    // 1. Strict Remote
+    if (remoteOnly && !job.isRemote) return false;
+
+    // 2. Strict Part-Time
+    if (partTimeOnly && job.employmentType !== 'Part-Time') return false;
+
+    // 3. Category Filter
+    if (selectedCategory !== 'All' && job.category !== selectedCategory) return false;
+
+    // 4. Search Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchTitle = job.title.toLowerCase().includes(q);
@@ -137,26 +158,29 @@ export default function App() {
       const matchTags = job.tags.some((t) => t.toLowerCase().includes(q));
       if (!matchTitle && !matchCompany && !matchTags) return false;
     }
+
     return true;
   });
 
-  const appliedCount = applications.filter((a) => a.status === 'applied').length;
   const savedCount = applications.filter((a) => a.status === 'saved').length;
+  const appliedCount = applications.filter((a) => a.status === 'applied').length;
+  const interviewCount = applications.filter((a) => a.status === 'interview').length;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
-      {/* App Header */}
+      {/* Header */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        appliedCount={appliedCount}
         savedCount={savedCount}
+        appliedCount={appliedCount}
+        interviewCount={interviewCount}
       />
 
-      {/* Toast Notification */}
+      {/* Floating Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 animate-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -165,7 +189,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'feed' ? (
           <div>
-            {/* Feature 2: College Schedule Matcher */}
+            {/* Student Schedule Bar */}
             <ScheduleSelector
               userSchedule={userSchedule}
               setUserSchedule={setUserSchedule}
@@ -173,7 +197,7 @@ export default function App() {
               setMaxHours={setMaxHours}
             />
 
-            {/* Feature 1: Strict Remote & Part-Time Filter */}
+            {/* Search (Improved) & Popular Filters - Screen 2 */}
             <FilterBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -181,24 +205,26 @@ export default function App() {
               setRemoteOnly={setRemoteOnly}
               partTimeOnly={partTimeOnly}
               setPartTimeOnly={setPartTimeOnly}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
               totalMatching={filteredJobs.length}
-              totalJobs={initialJobs.length}
             />
 
-            {/* Feature 3: Upfront Time-Commitment Job Cards */}
+            {/* Job Feed Grid */}
             {filteredJobs.length === 0 ? (
               <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center my-6">
-                <p className="text-sm font-bold text-slate-800 mb-1">No roles match your strict filter</p>
+                <p className="text-sm font-bold text-slate-800 mb-1">No roles match your filters</p>
                 <p className="text-xs text-slate-500 mb-4">
-                  Try turning off "Part-Time" or "Remote Only" to inspect offline full-time roles, or clear your search term.
+                  Turn off "Part-Time" or "Remote" to inspect offline roles, or choose "All" categories.
                 </p>
                 <button
                   onClick={() => {
-                    setRemoteOnly(false);
-                    setPartTimeOnly(false);
+                    setRemoteOnly(true);
+                    setPartTimeOnly(true);
+                    setSelectedCategory('All');
                     setSearchQuery('');
                   }}
-                  className="px-4 py-2 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 text-xs font-bold bg-slate-900 text-white rounded-xl hover:bg-slate-800"
                 >
                   Reset Filters
                 </button>
@@ -229,7 +255,7 @@ export default function App() {
             )}
           </div>
         ) : (
-          /* Feature 4: Basic Application Tracker (CRM) */
+          /* My Applications (Kanban) - Screen 4 */
           <KanbanBoard
             applications={applications}
             onUpdateStatus={handleUpdateStatus}
@@ -239,7 +265,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Feature 3: Detail Modal & Inspection View */}
+      {/* Job Detail Screen - Screen 3 */}
       {selectedJob && (
         <JobDetailModal
           job={selectedJob}
@@ -252,15 +278,13 @@ export default function App() {
             (a) => a.job.id === selectedJob.id && a.status === 'saved'
           )}
           onToggleSave={handleToggleSave}
-          userSchedule={userSchedule}
-          maxHours={maxHours}
         />
       )}
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-400">
-        <p>FlexHunter MVP — Built for College Students Seeking Flexible, Verified Internships.</p>
-        <p className="mt-1">Grounded in User Research with MSOT Students · 100% Free & Open Source</p>
+        <p>College Student Internship App (FlexHunter) — Designed & Built from Figma Wireframe</p>
+        <p className="mt-1">Figma Prototype: <a href="https://www.figma.com/design/cUSqziKBG0hMgspxI9M1vs" target="_blank" rel="noreferrer" className="text-blue-600 underline">cUSqziKBG0hMgspxI9M1vs</a></p>
       </footer>
     </div>
   );

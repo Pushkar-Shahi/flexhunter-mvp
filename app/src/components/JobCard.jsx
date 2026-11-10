@@ -1,14 +1,12 @@
 import React from 'react';
 import { 
   Building2, 
-  MapPin, 
-  Clock, 
-  Calendar, 
+  Bookmark, 
   CheckCircle2, 
   AlertTriangle, 
-  Bookmark, 
+  Clock, 
   ArrowRight,
-  DollarSign
+  ShieldCheck
 } from 'lucide-react';
 
 export default function JobCard({ 
@@ -20,128 +18,103 @@ export default function JobCard({
   isApplied, 
   onToggleSave 
 }) {
-  // Determine schedule match status
   const matchesSlot = 
     job.scheduleSlot === userSchedule || 
     job.scheduleSlot === 'flexible';
   
   const exceedsHours = job.hoursPerWeek > maxHours;
-  
   const isPerfectMatch = matchesSlot && !exceedsHours && job.isRemote;
 
   return (
-    <div className={`bg-white rounded-xl border p-5 transition-all shadow-sm hover:shadow-md ${
-      isPerfectMatch 
-        ? 'border-emerald-200 hover:border-emerald-400' 
-        : exceedsHours 
-          ? 'border-amber-200 hover:border-amber-400' 
-          : 'border-slate-200 hover:border-blue-300'
-    }`}>
-      {/* Top Header: Company, Title, Save Button */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>{job.company}</span>
-            <span className="text-slate-300">•</span>
-            <span>{job.postedDate}</span>
+    <div 
+      onClick={() => onSelectJob(job)}
+      className="bg-white rounded-2xl border border-slate-200 p-4.5 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+    >
+      <div>
+        {/* Top: Thumbnail, Title, Bookmark */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start space-x-3">
+            {/* Logo box */}
+            <div className={`w-11 h-11 rounded-xl ${job.logoBg || 'bg-blue-600'} text-white font-extrabold text-sm flex items-center justify-center shadow-xs shrink-0`}>
+              {job.logoText || job.company[0]}
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
+                {job.title}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {job.company} · <span className="font-semibold text-slate-700">{job.isRemote ? 'Remote' : job.location}</span> • {job.employmentType}
+              </p>
+            </div>
           </div>
-          <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-            {job.title}
-          </h3>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSave(job);
+            }}
+            className={`p-2 rounded-xl border transition-colors shrink-0 ${
+              isSaved
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'text-slate-400 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+            title={isSaved ? "Saved to Pipeline" : "Save to Pipeline"}
+          >
+            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-blue-600' : ''}`} />
+          </button>
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleSave(job);
-          }}
-          className={`p-2 rounded-lg border transition-all ${
-            isSaved
-              ? 'bg-blue-50 text-blue-600 border-blue-200'
-              : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-slate-700 hover:bg-slate-100'
-          }`}
-          title={isSaved ? "Saved to Pipeline" : "Save to Pipeline"}
-        >
-          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-blue-600' : ''}`} />
-        </button>
-      </div>
+        {/* Schedule Compatibility Highlight (Matching Screen 2 of Wireframe) */}
+        <div className="mt-3.5 mb-2.5">
+          {isPerfectMatch ? (
+            <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl px-3 py-2 flex items-center space-x-2 text-xs font-semibold text-emerald-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Schedule Compatibility: Fits Afternoon Classes ✓</span>
+            </div>
+          ) : exceedsHours ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex items-center space-x-2 text-xs font-semibold text-amber-800">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Bandwidth Alert: Exceeds your {maxHours}h limit ({job.hoursPerWeek}h/wk)</span>
+            </div>
+          ) : !job.isRemote ? (
+            <div className="bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 flex items-center space-x-2 text-xs font-semibold text-rose-800">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>Offline Warning: Clashes with college attendance</span>
+            </div>
+          ) : (
+            <div className="bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 flex items-center space-x-2 text-xs font-semibold text-slate-700">
+              <Clock className="w-4 h-4 text-slate-500 shrink-0" />
+              <span>Schedule: {job.scheduleSlotLabel}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Upfront Decision Badges (Feature 3: Must-Have) */}
-      <div className="flex flex-wrap items-center gap-2 my-3">
-        {/* Remote pill */}
-        <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-semibold ${
-          job.isRemote 
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            : 'bg-rose-50 text-rose-700 border border-rose-200'
-        }`}>
-          <MapPin className="w-3 h-3" />
-          <span>{job.isRemote ? '100% Remote' : job.location}</span>
-        </span>
-
-        {/* Hours / Week pill */}
-        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-          <Clock className="w-3 h-3" />
-          <span>{job.hoursPerWeek} hrs/week ({job.dailyCommitment})</span>
-        </span>
-
-        {/* Stipend pill */}
-        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-          <span>{job.stipend}</span>
-        </span>
-      </div>
-
-      {/* College Schedule Match Badge (Feature 2) */}
-      <div className="my-3">
-        {isPerfectMatch ? (
-          <div className="flex items-center space-x-2 bg-emerald-50/70 border border-emerald-200/80 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-800">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>✓ Fits your class schedule ({job.scheduleSlotLabel})</span>
-          </div>
-        ) : exceedsHours ? (
-          <div className="flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-800">
-            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-            <span>⚠ Exceeds your max bandwidth ({job.hoursPerWeek}h vs your {maxHours}h limit)</span>
-          </div>
-        ) : !job.isRemote ? (
-          <div className="flex items-center space-x-2 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-medium text-rose-800">
-            <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-            <span>⚠ Offline attendance conflicts with college</span>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-2 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-700">
-            <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
-            <span>Requires {job.scheduleSlotLabel} commitment</span>
-          </div>
-        )}
-      </div>
-
-      {/* Tags */}
-      <div className="flex flex-wrap gap-1.5 my-3">
-        {job.tags.map((tag, i) => (
-          <span key={i} className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">
-            {tag}
+        {/* Tags */}
+        <div className="flex flex-wrap items-center gap-1.5 my-2">
+          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            {job.hoursPerWeek} hrs/week
           </span>
-        ))}
+          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+            {job.stipend}
+          </span>
+          {job.tags.slice(0, 2).map((t, idx) => (
+            <span key={idx} className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600">
+              {t}
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Card Footer Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-3">
-        <span className="text-xs text-slate-500 font-medium">
-          {job.scheduleFitReason.slice(0, 48)}...
+      {/* Card Bottom CTA */}
+      <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-2">
+        <span className="text-[11px] text-slate-400 font-medium">
+          {job.postedDate}
         </span>
-
-        <button
-          onClick={() => onSelectJob(job)}
-          className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            isApplied
-              ? 'bg-slate-100 text-slate-600 cursor-default'
-              : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
-          }`}
-        >
-          <span>{isApplied ? 'Applied ✓' : 'Inspect & Apply'}</span>
-          {!isApplied && <ArrowRight className="w-3.5 h-3.5" />}
-        </button>
+        <span className="text-xs font-bold text-blue-600 flex items-center space-x-1 group-hover:translate-x-0.5 transition-transform">
+          <span>{isApplied ? 'Applied ✓' : 'View Details'}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </span>
       </div>
     </div>
   );
