@@ -5,6 +5,7 @@ import ProfileAvailabilityView from './components/ProfileAvailabilityView';
 import MatchFeedView from './components/MatchFeedView';
 import ApplicationTrackerView from './components/ApplicationTrackerView';
 import ExtensionSimulationView from './components/ExtensionSimulationView';
+import EmailDraftModal from './components/EmailDraftModal';
 import { initialApplications, initialJobsData } from './data/mockData';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -22,9 +23,10 @@ export default function App() {
   });
   const [remoteOnly, setRemoteOnly] = useState(true);
 
-  // Extension Modal State (Screen 4)
+  // Modals State
   const [isExtensionOpen, setIsExtensionOpen] = useState(false);
   const [extensionTargetJob, setExtensionTargetJob] = useState(null);
+  const [draftEmailApp, setDraftEmailApp] = useState(null);
 
   // Toast State
   const [toastMessage, setToastMessage] = useState(null);
@@ -177,6 +179,7 @@ export default function App() {
               applications={applications}
               setApplications={setApplications}
               onOpenExtensionForJob={handleApplyViaExtension}
+              onOpenDraftEmail={(app) => setDraftEmailApp(app)}
             />
           )}
 
@@ -189,6 +192,14 @@ export default function App() {
           targetJob={extensionTargetJob}
           onClose={() => setIsExtensionOpen(false)}
           onAutoFillAndTrack={handleAutoFillAndTrack}
+        />
+      )}
+
+      {/* Actionable Follow-Up Email Generator Modal */}
+      {draftEmailApp && (
+        <EmailDraftModal
+          application={draftEmailApp}
+          onClose={() => setDraftEmailApp(null)}
         />
       )}
 

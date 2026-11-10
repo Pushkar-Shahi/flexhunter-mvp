@@ -5,7 +5,10 @@ import {
   X, 
   Plus, 
   Check, 
-  AlertCircle 
+  AlertCircle,
+  Calendar,
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import { initialScheduleSlots } from '../data/mockData';
 
@@ -26,7 +29,7 @@ export default function ProfileAvailabilityView({
     "Copywriting",
     "Video Editing"
   ]);
-  const [portfolioLink, setPortfolioLink] = useState("");
+  const [portfolioLink, setPortfolioLink] = useState("https://behance.net/tanmay-portfolio");
   const [newSkillInput, setNewSkillInput] = useState("");
   const [showAddSkill, setShowAddSkill] = useState(false);
 
@@ -73,8 +76,12 @@ export default function ProfileAvailabilityView({
     <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in duration-150">
       
       {/* Title Header with Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100">
         <div>
+          <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
+            <Calendar className="w-4 h-4" />
+            <span>Screen 1: Candidate Constraints & Setup</span>
+          </div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
             My Availability & Career Preferences
           </h1>
@@ -92,7 +99,7 @@ export default function ProfileAvailabilityView({
           </button>
           <button 
             onClick={() => onSave()}
-            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-98"
+            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-98"
           >
             Save Preferences
           </button>
@@ -113,7 +120,7 @@ export default function ProfileAvailabilityView({
           <div className="space-y-2 pt-2">
             <div className="flex justify-between items-center text-xs font-bold">
               <span className="text-slate-700">Weekly hours</span>
-              <span className="text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-md font-extrabold">
+              <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-extrabold">
                 {maxHours} hrs / week
               </span>
             </div>
@@ -124,7 +131,7 @@ export default function ProfileAvailabilityView({
               step="1"
               value={maxHours}
               onChange={(e) => setMaxHours(Number(e.target.value))}
-              className="w-full accent-slate-900 cursor-pointer"
+              className="w-full accent-blue-600 cursor-pointer"
             />
             <div className="flex justify-between text-[11px] text-slate-400 font-semibold">
               <span>5 hrs</span>
@@ -137,13 +144,18 @@ export default function ProfileAvailabilityView({
             {/* Remote Only Toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-slate-800">Remote Only</div>
+                <div className="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                  <span>Remote Only</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                    Active
+                  </span>
+                </div>
                 <div className="text-[11px] text-slate-400">Hide on-site and hybrid roles</div>
               </div>
               <button
                 onClick={() => setRemoteOnly(!remoteOnly)}
                 className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                  remoteOnly ? 'bg-slate-900 justify-end' : 'bg-slate-200 justify-start'
+                  remoteOnly ? 'bg-blue-600 justify-end' : 'bg-slate-200 justify-start'
                 }`}
               >
                 <div className="w-4 h-4 rounded-full bg-white shadow-xs"></div>
@@ -159,7 +171,7 @@ export default function ProfileAvailabilityView({
               <button
                 onClick={() => setStipendRequired(!stipendRequired)}
                 className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                  stipendRequired ? 'bg-slate-900 justify-end' : 'bg-slate-200 justify-start'
+                  stipendRequired ? 'bg-blue-600 justify-end' : 'bg-slate-200 justify-start'
                 }`}
               >
                 <div className="w-4 h-4 rounded-full bg-white shadow-xs"></div>
@@ -175,7 +187,7 @@ export default function ProfileAvailabilityView({
               <button
                 onClick={() => setWeekendsOnly(!weekendsOnly)}
                 className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                  weekendsOnly ? 'bg-slate-900 justify-end' : 'bg-slate-200 justify-start'
+                  weekendsOnly ? 'bg-blue-600 justify-end' : 'bg-slate-200 justify-start'
                 }`}
               >
                 <div className="w-4 h-4 rounded-full bg-white shadow-xs"></div>
@@ -193,8 +205,8 @@ export default function ProfileAvailabilityView({
           </div>
 
           {/* Upload Dropzone */}
-          <div className="border border-dashed border-slate-300 rounded-xl p-4 text-center bg-slate-50/50 space-y-1">
-            <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mx-auto mb-1">
+          <div className="border border-dashed border-blue-200 rounded-xl p-4 text-center bg-blue-50/20 space-y-1">
+            <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-1">
               <Upload className="w-3.5 h-3.5" />
             </div>
             <div className="text-xs font-bold text-slate-800">Drop your resume here, or browse files</div>
@@ -202,17 +214,17 @@ export default function ProfileAvailabilityView({
           </div>
 
           {/* Uploaded File Pill */}
-          <div className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white">
+          <div className="flex items-center justify-between p-2.5 rounded-xl border border-blue-200 bg-blue-50/30">
             <div className="flex items-center space-x-2.5">
-              <div className="w-7 h-7 rounded-lg bg-slate-200 flex items-center justify-center text-slate-600 shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-bold text-slate-800">resume_2026.pdf</div>
-                <div className="text-[10px] text-slate-400">Parsed just now · 5 skills found</div>
+                <div className="text-xs font-bold text-slate-900">resume_2026.pdf</div>
+                <div className="text-[10px] text-slate-500">Parsed just now · 5 skills extracted</div>
               </div>
             </div>
-            <button className="text-[11px] font-bold text-slate-500 hover:text-slate-800 underline">
+            <button className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline">
               Replace
             </button>
           </div>
@@ -228,10 +240,10 @@ export default function ProfileAvailabilityView({
                 <button
                   key={s}
                   onClick={() => removeSkill(s)}
-                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 flex items-center space-x-1"
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100 flex items-center space-x-1"
                 >
                   <span>{s}</span>
-                  <X className="w-3 h-3 text-slate-400" />
+                  <X className="w-3 h-3 text-blue-400" />
                 </button>
               ))}
 
@@ -243,7 +255,7 @@ export default function ProfileAvailabilityView({
                     placeholder="Skill..."
                     value={newSkillInput}
                     onChange={(e) => setNewSkillInput(e.target.value)}
-                    className="px-2 py-0.5 text-xs border border-slate-300 rounded-full w-24 focus:outline-none"
+                    className="px-2 py-0.5 text-xs border border-blue-300 rounded-full w-24 focus:outline-none"
                     onBlur={() => setShowAddSkill(false)}
                   />
                 </form>
@@ -267,7 +279,7 @@ export default function ProfileAvailabilityView({
               placeholder="https://github.com/yourname or your-portfolio.com"
               value={portfolioLink}
               onChange={(e) => setPortfolioLink(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:text-slate-400"
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400"
             />
           </div>
 
@@ -275,13 +287,18 @@ export default function ProfileAvailabilityView({
 
       </div>
 
-      {/* Bottom Section: College Schedule (Exact Matrix from Image 1) */}
+      {/* Bottom Section: College Schedule (Soft-Tinted Blocks with Badges) */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-2xs">
         
         {/* Header with Subtext and Legend */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-bold text-slate-900">College Schedule</h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-sm font-bold text-slate-900">College Schedule</h2>
+              <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Live Timetable
+              </span>
+            </div>
             <p className="text-xs text-slate-400 mt-0.5">
               Click or drag to block your lecture hours. FlexHunter only suggests work outside these slots.
             </p>
@@ -290,15 +307,16 @@ export default function ProfileAvailabilityView({
           {/* Legend + Counter */}
           <div className="flex items-center space-x-4 text-xs font-semibold shrink-0">
             <div className="flex items-center space-x-1.5">
-              <span className="w-3 h-3 rounded bg-slate-300"></span>
-              <span className="text-slate-600">Lecture</span>
+              <span className="w-3 h-3 rounded bg-rose-100 border border-rose-300"></span>
+              <span className="text-slate-700">Lecture (Blocked)</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="w-3 h-3 rounded border border-slate-300 bg-white"></span>
-              <span className="text-slate-600">Free</span>
+              <span className="w-3 h-3 rounded border border-emerald-300 bg-emerald-50"></span>
+              <span className="text-emerald-800 font-semibold">Available for Work</span>
             </div>
-            <span className="px-2.5 py-1 rounded-md bg-black text-white text-xs font-bold">
-              68 free hrs / week
+            <span className="px-3 py-1 rounded-full bg-slate-900 text-emerald-400 text-xs font-extrabold shadow-xs flex items-center space-x-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>68 free hrs / week</span>
             </span>
           </div>
         </div>
@@ -307,7 +325,7 @@ export default function ProfileAvailabilityView({
         <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-center text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50">
+              <tr className="border-b border-slate-200 bg-slate-50/70">
                 <th className="w-16 py-2 px-3 text-left font-bold text-slate-400 text-[11px]"></th>
                 {days.map((day) => (
                   <th key={day} className="py-2.5 px-2 font-bold text-slate-700 text-xs">
@@ -319,7 +337,7 @@ export default function ProfileAvailabilityView({
             <tbody>
               {hours.map((hour) => (
                 <tr key={hour} className="border-b border-slate-100 last:border-b-0 h-9">
-                  <td className="py-1 px-3 text-left font-semibold text-slate-400 text-[11px] whitespace-nowrap bg-slate-50/20">
+                  <td className="py-1 px-3 text-left font-semibold text-slate-400 text-[11px] whitespace-nowrap bg-slate-50/30">
                     {hour}
                   </td>
                   {days.map((day) => {
@@ -332,12 +350,12 @@ export default function ProfileAvailabilityView({
                           onClick={() => toggleSlot(day, hour)}
                           className={`w-full h-7 rounded text-[10px] font-bold transition-all flex items-center justify-center overflow-hidden truncate px-1 border ${
                             isBlocked
-                              ? 'bg-slate-300 text-slate-800 border-slate-400'
-                              : 'bg-white hover:bg-slate-50 text-transparent border-slate-200'
+                              ? 'bg-rose-50 text-rose-800 border-rose-200 shadow-2xs'
+                              : 'bg-emerald-50/40 text-emerald-700/60 hover:bg-emerald-50 border-emerald-100 hover:border-emerald-300'
                           }`}
-                          title={`${day} ${hour}: ${isBlocked ? slotInfo?.label || 'Lecture' : 'Free'}`}
+                          title={`${day} ${hour}: ${isBlocked ? slotInfo?.label || 'College Lecture' : 'Available for Internship'}`}
                         >
-                          {isBlocked ? slotInfo?.label || '' : ''}
+                          {isBlocked ? slotInfo?.label || 'Class' : ''}
                         </button>
                       </td>
                     );
