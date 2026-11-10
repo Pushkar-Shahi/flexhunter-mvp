@@ -59,14 +59,23 @@ This build log documents every step of development, tracking prompts used, what 
 * **Prompt**: "can u think we can imporve in it also can u colour code it /grill-me"
 * **Date**: 2026-11-10
 * **What Worked**:
-  - Ran iterative design grill interview to align on functional semantic palette and core UX improvements.
-  - Implemented **Functional Semantic Accents**:
-    - **Emerald Green**: Match scores (>90%), available timetable slots, live free-hours counter, offer columns.
-    - **Amber / Orange**: High-visibility follow-up alerts, schedule clash warnings, expiration badges.
-    - **Primary Blue**: Active actions, bandwidth slider, applied column headers.
-    - **Purple**: Stipend pills (`₹10k / mo`), interview stage columns.
+  - Implemented **Functional Semantic Accents**: Emerald Green for match/availability, Amber for follow-up timers, Blue for primary actions, Purple for stipends.
   - Built **Actionable Follow-Up Email Generator** (`EmailDraftModal.jsx`): Clicking "Draft Follow-Up Email" generates a tailored email with 1-click clipboard copy.
-* **Verification & Testing**:
-  - Executed `npm run build`: Success in 1.34s (0 errors).
-  - Captured live screenshot: `color_coded_screen1.png`.
 * **Outcome**: Git commit `b53de18`.
+
+---
+
+## Session 6: Fixing Missing Saved Jobs & Resume Studio Views
+* **Prompt**: "saved jobs and resume not working" (with screenshots)
+* **Date**: 2026-11-10
+* **What Broke**:
+  - Clicking "Resume Studio" in the sidebar left the main canvas blank because no view component was rendered for `activeView === 'resume'`.
+  - Clicking "Saved Jobs" rerouted to the entire 5-column Kanban board instead of a dedicated saved collection.
+* **How It Was Fixed**:
+  - Built `ResumeStudioView.jsx`: Features the uploaded `resume_2026.pdf` file card, a 94/100 student ATS score meter, extracted skills management, and an AI Application Pitch Generator with 1-click copy.
+  - Built `SavedJobsView.jsx`: Dedicated grid for all bookmarked jobs with status badges, direct "Apply via Extension" triggers, and delete actions.
+  - Updated `Sidebar.jsx` and `App.jsx` to route both tabs directly.
+* **Verification**:
+  - `npm run build`: Success in 1.50s (0 errors).
+  - Tested both views live via browser screenshots (`resume_studio_screenshot.png` and `saved_jobs_screenshot.png`).
+* **Outcome**: Both views fully operational. Git commit `c14f17c`.
