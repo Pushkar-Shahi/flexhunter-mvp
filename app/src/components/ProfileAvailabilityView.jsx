@@ -1,111 +1,121 @@
 import React, { useState } from 'react';
 import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  DollarSign, 
-  Sparkles, 
-  CheckCircle2, 
-  ArrowRight,
-  ShieldCheck,
-  Plus,
-  X
+  Upload, 
+  FileText, 
+  X, 
+  Plus, 
+  Check, 
+  AlertCircle 
 } from 'lucide-react';
+import { initialScheduleSlots } from '../data/mockData';
 
-export default function ProfileAvailabilityView({ 
-  maxHours, 
-  setMaxHours, 
-  remoteOnly, 
+export default function ProfileAvailabilityView({
+  maxHours,
+  setMaxHours,
+  remoteOnly,
   setRemoteOnly,
-  onSaveAndExplore 
+  onSave
 }) {
-  // Weekly timetable matrix state
-  // Initial state: Mon-Fri mornings are blocked for college lectures
+  const [stipendRequired, setStipendRequired] = useState(false);
+  const [weekendsOnly, setWeekendsOnly] = useState(false);
+
+  const [skills, setSkills] = useState([
+    "Figma",
+    "Canva",
+    "Social Media Marketing",
+    "Copywriting",
+    "Video Editing"
+  ]);
+  const [portfolioLink, setPortfolioLink] = useState("");
+  const [newSkillInput, setNewSkillInput] = useState("");
+  const [showAddSkill, setShowAddSkill] = useState(false);
+
+  // Timetable
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const slots = [
-    { id: "morning", label: "Morning (9 AM - 1 PM)" },
-    { id: "afternoon", label: "Afternoon (1 PM - 6 PM)" },
-    { id: "evening", label: "Evening (6 PM - 9 PM)" }
+  const hours = [
+    "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", 
+    "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM"
   ];
 
-  const [timetable, setTimetable] = useState({
-    "Mon-morning": "blocked",
-    "Mon-afternoon": "available",
-    "Mon-evening": "available",
-    "Tue-morning": "blocked",
-    "Tue-afternoon": "available",
-    "Tue-evening": "available",
-    "Wed-morning": "blocked",
-    "Wed-afternoon": "available",
-    "Wed-evening": "available",
-    "Thu-morning": "blocked",
-    "Thu-afternoon": "available",
-    "Thu-evening": "available",
-    "Fri-morning": "blocked",
-    "Fri-afternoon": "available",
-    "Fri-evening": "available",
-    "Sat-morning": "available",
-    "Sat-afternoon": "available",
-    "Sat-evening": "available",
-    "Sun-morning": "available",
-    "Sun-afternoon": "available",
-    "Sun-evening": "available",
-  });
+  const [schedule, setSchedule] = useState(initialScheduleSlots);
 
-  const toggleSlot = (key) => {
-    setTimetable((prev) => ({
-      ...prev,
-      [key]: prev[key] === "blocked" ? "available" : "blocked"
-    }));
-  };
-
-  // Skills state
-  const [skills, setSkills] = useState(["Figma", "Canva", "Social Media Marketing", "Copywriting"]);
-  const [newSkill, setNewSkill] = useState("");
-  const [portfolioUrl, setPortfolioUrl] = useState("https://behance.net/tanmay-portfolio");
-  const [minStipend, setMinStipend] = useState("5000");
-
-  const addSkill = (e) => {
-    e.preventDefault();
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
-      setNewSkill("");
-    }
+  const toggleSlot = (day, hour) => {
+    const key = `${day}-${hour}`;
+    setSchedule((prev) => {
+      const current = prev[key];
+      if (current?.blocked) {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      } else {
+        return {
+          ...prev,
+          [key]: { blocked: true, label: "" }
+        };
+      }
+    });
   };
 
   const removeSkill = (skillToRemove) => {
     setSkills(skills.filter((s) => s !== skillToRemove));
   };
 
+  const addSkill = (e) => {
+    e.preventDefault();
+    if (newSkillInput.trim() && !skills.includes(newSkillInput.trim())) {
+      setSkills([...skills, newSkillInput.trim()]);
+      setNewSkillInput("");
+      setShowAddSkill(false);
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12 animate-in fade-in duration-200">
+    <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in duration-150">
       
-      {/* Page Title & Subtitle (Matching Screen 1 of Wireframe) */}
-      <div className="pb-4 border-b border-slate-200">
-        <div className="flex items-center space-x-2 text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
-          <Calendar className="w-4 h-4" />
-          <span>Screen 1: Candidate Constraints & Setup</span>
+      {/* Title Header with Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            My Availability & Career Preferences
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Tell FlexHunter your limits so every match actually fits your life.
+          </p>
         </div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          My Availability & Career Preferences
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Set your schedule boundaries so FlexHunter only matches roles that fit parallel with your college degree.
-        </p>
+
+        <div className="flex items-center space-x-2 shrink-0">
+          <button 
+            onClick={() => onSave()}
+            className="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => onSave()}
+            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-98"
+          >
+            Save Preferences
+          </button>
+        </div>
       </div>
 
-      {/* Card 1: Hard Constraints */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-5">
-        <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
-          <span>1. Hard Constraints</span>
-        </h3>
+      {/* Top 2-Column Section: Work Constraints & Skills */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        
+        {/* Left Card: Work Constraints */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-5 shadow-2xs">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">Work Constraints</h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">Matches are filtered to fit these limits.</p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Max Hours Slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-600">Weekly Bandwidth:</span>
-              <span className="text-blue-600 font-extrabold">{maxHours} hrs/week</span>
+          {/* Weekly Hours Slider */}
+          <div className="space-y-2 pt-2">
+            <div className="flex justify-between items-center text-xs font-bold">
+              <span className="text-slate-700">Weekly hours</span>
+              <span className="text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-md font-extrabold">
+                {maxHours} hrs / week
+              </span>
             </div>
             <input
               type="range"
@@ -114,114 +124,220 @@ export default function ProfileAvailabilityView({
               step="1"
               value={maxHours}
               onChange={(e) => setMaxHours(Number(e.target.value))}
-              className="w-full accent-blue-600 cursor-pointer"
+              className="w-full accent-slate-900 cursor-pointer"
             />
-            <span className="text-[11px] text-slate-400 block">
-              Default is 15h to protect your college GPA.
-            </span>
+            <div className="flex justify-between text-[11px] text-slate-400 font-semibold">
+              <span>5 hrs</span>
+              <span>30 hrs</span>
+            </div>
           </div>
 
-          {/* Remote Mode Toggle */}
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-slate-600 block">Work Mode:</span>
-            <div className="flex items-center space-x-2">
+          {/* Toggle Switches */}
+          <div className="space-y-4 pt-2 border-t border-slate-100">
+            {/* Remote Only Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-800">Remote Only</div>
+                <div className="text-[11px] text-slate-400">Hide on-site and hybrid roles</div>
+              </div>
               <button
-                onClick={() => setRemoteOnly(true)}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all ${
-                  remoteOnly
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                onClick={() => setRemoteOnly(!remoteOnly)}
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
+                  remoteOnly ? 'bg-slate-900 justify-end' : 'bg-slate-200 justify-start'
                 }`}
               >
-                Remote Only ✓
+                <div className="w-4 h-4 rounded-full bg-white shadow-xs"></div>
               </button>
+            </div>
+
+            {/* Stipend Required */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-800">Stipend Required</div>
+                <div className="text-[11px] text-slate-400">Skip unpaid opportunities</div>
+              </div>
               <button
-                onClick={() => setRemoteOnly(false)}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all ${
-                  !remoteOnly
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                onClick={() => setStipendRequired(!stipendRequired)}
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
+                  stipendRequired ? 'bg-slate-900 justify-end' : 'bg-slate-200 justify-start'
                 }`}
               >
-                Allow Hybrid
+                <div className="w-4 h-4 rounded-full bg-white shadow-xs"></div>
+              </button>
+            </div>
+
+            {/* Weekends Only */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-800">Weekends only</div>
+                <div className="text-[11px] text-slate-400">Only show weekend-friendly work</div>
+              </div>
+              <button
+                onClick={() => setWeekendsOnly(!weekendsOnly)}
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
+                  weekendsOnly ? 'bg-slate-900 justify-end' : 'bg-slate-200 justify-start'
+                }`}
+              >
+                <div className="w-4 h-4 rounded-full bg-white shadow-xs"></div>
               </button>
             </div>
           </div>
 
-          {/* Min Stipend */}
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-slate-600 block">Minimum Stipend:</span>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
-              <input
-                type="number"
-                value={minStipend}
-                onChange={(e) => setMinStipend(e.target.value)}
-                className="w-full pl-7 pr-3 py-1.5 text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                placeholder="5000"
-              />
-            </div>
-            <span className="text-[11px] text-slate-400 block">Filters out unpaid work</span>
-          </div>
         </div>
+
+        {/* Right Card: Skills & Portfolio */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xs">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">Skills & Portfolio</h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">Upload your resume and we'll pull out your skills automatically.</p>
+          </div>
+
+          {/* Upload Dropzone */}
+          <div className="border border-dashed border-slate-300 rounded-xl p-4 text-center bg-slate-50/50 space-y-1">
+            <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mx-auto mb-1">
+              <Upload className="w-3.5 h-3.5" />
+            </div>
+            <div className="text-xs font-bold text-slate-800">Drop your resume here, or browse files</div>
+            <div className="text-[10px] text-slate-400">PDF or DOCX · up to 5 MB</div>
+          </div>
+
+          {/* Uploaded File Pill */}
+          <div className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-7 h-7 rounded-lg bg-slate-200 flex items-center justify-center text-slate-600 shrink-0">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-800">resume_2026.pdf</div>
+                <div className="text-[10px] text-slate-400">Parsed just now · 5 skills found</div>
+              </div>
+            </div>
+            <button className="text-[11px] font-bold text-slate-500 hover:text-slate-800 underline">
+              Replace
+            </button>
+          </div>
+
+          {/* Parsed Skills */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800">Parsed skills</span>
+              <span className="text-[10px] text-slate-400">Click a pill to remove</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {skills.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => removeSkill(s)}
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 flex items-center space-x-1"
+                >
+                  <span>{s}</span>
+                  <X className="w-3 h-3 text-slate-400" />
+                </button>
+              ))}
+
+              {showAddSkill ? (
+                <form onSubmit={addSkill} className="inline-flex">
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Skill..."
+                    value={newSkillInput}
+                    onChange={(e) => setNewSkillInput(e.target.value)}
+                    className="px-2 py-0.5 text-xs border border-slate-300 rounded-full w-24 focus:outline-none"
+                    onBlur={() => setShowAddSkill(false)}
+                  />
+                </form>
+              ) : (
+                <button
+                  onClick={() => setShowAddSkill(true)}
+                  className="px-2.5 py-1 rounded-full text-xs font-bold border border-dashed border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center space-x-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Add skill</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Portfolio Link */}
+          <div className="space-y-1 pt-1">
+            <label className="text-xs font-bold text-slate-800 block">Portfolio / GitHub link</label>
+            <input
+              type="text"
+              placeholder="https://github.com/yourname or your-portfolio.com"
+              value={portfolioLink}
+              onChange={(e) => setPortfolioLink(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:text-slate-400"
+            />
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Card 2: Visual Weekly College Timetable Grid (Screen 1 from Wireframe) */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* Bottom Section: College Schedule (Exact Matrix from Image 1) */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-2xs">
+        
+        {/* Header with Subtext and Legend */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-              2. College Schedule Matrix
-            </h3>
-            <p className="text-xs text-slate-500">
-              Click any time block to toggle between College Lectures and Open for Internships.
+            <h2 className="text-sm font-bold text-slate-900">College Schedule</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Click or drag to block your lecture hours. FlexHunter only suggests work outside these slots.
             </p>
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center space-x-4 text-xs">
+          {/* Legend + Counter */}
+          <div className="flex items-center space-x-4 text-xs font-semibold shrink-0">
             <div className="flex items-center space-x-1.5">
-              <span className="w-3 h-3 rounded bg-rose-100 border border-rose-300"></span>
-              <span className="text-slate-600">College Lectures (Blocked)</span>
+              <span className="w-3 h-3 rounded bg-slate-300"></span>
+              <span className="text-slate-600">Lecture</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-300"></span>
-              <span className="text-slate-600">Open for Work</span>
+              <span className="w-3 h-3 rounded border border-slate-300 bg-white"></span>
+              <span className="text-slate-600">Free</span>
             </div>
+            <span className="px-2.5 py-1 rounded-md bg-black text-white text-xs font-bold">
+              68 free hrs / week
+            </span>
           </div>
         </div>
 
-        {/* The Matrix Grid */}
+        {/* Timetable Matrix */}
         <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-center text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="p-2.5 text-left font-bold text-slate-500 uppercase tracking-wider text-[11px]">Time Slot</th>
-                {days.map((d) => (
-                  <th key={d} className="p-2.5 font-bold text-slate-800 text-[11px]">{d}</th>
+              <tr className="border-b border-slate-200 bg-slate-50/50">
+                <th className="w-16 py-2 px-3 text-left font-bold text-slate-400 text-[11px]"></th>
+                {days.map((day) => (
+                  <th key={day} className="py-2.5 px-2 font-bold text-slate-700 text-xs">
+                    {day}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {slots.map((slot) => (
-                <tr key={slot.id} className="border-b border-slate-100 last:border-b-0">
-                  <td className="p-2.5 text-left font-semibold text-slate-600 text-xs bg-slate-50/50">
-                    {slot.label}
+              {hours.map((hour) => (
+                <tr key={hour} className="border-b border-slate-100 last:border-b-0 h-9">
+                  <td className="py-1 px-3 text-left font-semibold text-slate-400 text-[11px] whitespace-nowrap bg-slate-50/20">
+                    {hour}
                   </td>
                   {days.map((day) => {
-                    const key = `${day}-${slot.id}`;
-                    const isBlocked = timetable[key] === "blocked";
+                    const key = `${day}-${hour}`;
+                    const slotInfo = schedule[key];
+                    const isBlocked = slotInfo?.blocked;
                     return (
-                      <td key={key} className="p-1.5">
+                      <td key={key} className="p-1">
                         <button
-                          onClick={() => toggleSlot(key)}
-                          className={`w-full py-2 px-1 rounded-lg text-[10px] font-bold border transition-all ${
+                          onClick={() => toggleSlot(day, hour)}
+                          className={`w-full h-7 rounded text-[10px] font-bold transition-all flex items-center justify-center overflow-hidden truncate px-1 border ${
                             isBlocked
-                              ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              ? 'bg-slate-300 text-slate-800 border-slate-400'
+                              : 'bg-white hover:bg-slate-50 text-transparent border-slate-200'
                           }`}
+                          title={`${day} ${hour}: ${isBlocked ? slotInfo?.label || 'Lecture' : 'Free'}`}
                         >
-                          {isBlocked ? 'Lectures' : 'Available'}
+                          {isBlocked ? slotInfo?.label || '' : ''}
                         </button>
                       </td>
                     );
@@ -231,69 +347,7 @@ export default function ProfileAvailabilityView({
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Card 3: Skills & Portfolio */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
-        <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-          3. Skills & Portfolio Assets
-        </h3>
-
-        <div>
-          <span className="text-xs font-semibold text-slate-600 block mb-2">Your Skills & Tools:</span>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {skills.map((s) => (
-              <span key={s} className="inline-flex items-center space-x-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-lg text-xs font-bold">
-                <span>{s}</span>
-                <button onClick={() => removeSkill(s)} className="text-blue-400 hover:text-blue-800">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-
-          <form onSubmit={addSkill} className="flex gap-2 max-w-sm">
-            <input
-              type="text"
-              placeholder="Add skill (e.g. Python, Video Editing)..."
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-            <button
-              type="submit"
-              className="px-3 py-1.5 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-700"
-            >
-              Add
-            </button>
-          </form>
-        </div>
-
-        <div>
-          <span className="text-xs font-semibold text-slate-600 block mb-1">Portfolio / Behance / GitHub Link:</span>
-          <input
-            type="text"
-            value={portfolioUrl}
-            onChange={(e) => setPortfolioUrl(e.target.value)}
-            className="w-full max-w-lg px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
-      </div>
-
-      {/* Bottom Save & Proceed CTA */}
-      <div className="flex items-center justify-between p-4 bg-slate-900 text-white rounded-2xl shadow-lg">
-        <div>
-          <span className="text-xs text-slate-300 font-semibold block">Preferences Saved</span>
-          <span className="text-xs text-emerald-400 font-bold">✓ Morning lectures blocked · Free after 1 PM</span>
-        </div>
-
-        <button
-          onClick={onSaveAndExplore}
-          className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-extrabold text-xs transition-all shadow-md active:scale-98"
-        >
-          <span>Explore Matching Feed</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
 
     </div>
