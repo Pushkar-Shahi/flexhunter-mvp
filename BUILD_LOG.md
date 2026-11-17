@@ -101,3 +101,25 @@ This build log documents every step of development, tracking prompts used, what 
   - `npm run build`: Compiled production bundle in 1.46s with 0 errors.
   - Headless Chrome testing captured 7 high-resolution screenshots across all screens verifying theme contrast and aesthetic fidelity.
 * **Outcome**: Full dark mode operational. Git commit `44d449f`.
+
+---
+
+## Session 8: Automated State Validation Testing Architecture (fast-check & RTL)
+* **Prompt**: "this is the reserch that i did so that we can improve our mvp here i have new testing library that we can use to test automatically"
+* **Research Reference**: *Automated Verification of State Correctness: Advancing Beyond Structural Change Detection*
+* **Date**: 2026-11-17
+* **Paradigm Shift**:
+  - Moved beyond shallow snapshot / change detection ("Joker" diffing) to theoretical state correctness verification (Martin Fowler's State vs. Behavior verification, Ammann & Offutt's RIPR model).
+  - Implemented Model-Based Testing (MBT) to verify that state mutations adhere to strict logical invariants across hundreds of randomized transitions.
+* **What Worked**:
+  - Installed `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`, `jsdom`, and `fast-check`.
+  - Configured `vite.config.js` and `src/test/setup.js` for automated testing.
+  - Added npm scripts `"test": "vitest run"` and `"test:watch": "vitest"`.
+  - Created 3 comprehensive test suites:
+    1. **`src/test/mbt-crm.spec.js`**: Stateful Property-Based Testing with `fast-check` defining an abstract `KanbanModel`, `KanbanRealSystem`, transition commands (`AddApplicationCommand`, `MoveNextCommand`, `RemoveApplicationCommand`), preconditions, and 5 post-execution invariants across 100 randomized chains.
+    2. **`src/test/properties.spec.js`**: Mathematical invariants with `fast-check` (schedule toggle involution $f(f(S)) = S$, weekly hours slider bounds $[5, 30]$, filter soundness/completeness, Kanban partition uniqueness).
+    3. **`src/test/app-state-verification.spec.jsx`**: Semantic DOM state verification with RTL & Vitest without internal mock spying (dark mode toggle, navigation routing, hours slider, skill tagging, job saving, Kanban stage progression, email generator modal, extension auto-fill & track).
+* **Verification**:
+  - `npm test`: 3 test files, 13 test suites/runs passed in 2.06s.
+  - `npm run build`: Compiled production bundle in 1.22s with 0 errors.
+* **Outcome**: Automated state correctness verification suite fully operational.
