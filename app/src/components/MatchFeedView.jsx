@@ -33,6 +33,7 @@ export default function MatchFeedView({
     if (filterRemote && !job.isRemote) return false;
     if (filterHighMatch && job.matchScore < 85) return false;
     if (filterWeekend && !job.hoursRange.toLowerCase().includes('weekend')) return false;
+    if (filterPartTime && job.hoursPerWeek >= 15) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (

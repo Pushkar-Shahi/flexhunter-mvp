@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "FlexHunter — Student Internship Autofill & Tracker",
+  "version": "1.0.0",
+  "description": "Smart student job application autofill and availability protection overlay for Internshala, LinkedIn, and Indeed.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://internshala.com/*",
+    "https://*.linkedin.com/*",
+    "https://*.indeed.com/*",
+    "https://wellfound.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FlexHunter Autofill"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://internshala.com/*",
+        "https://*.linkedin.com/*",
+        "https://*.indeed.com/*",
+        "https://wellfound.com/*",
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

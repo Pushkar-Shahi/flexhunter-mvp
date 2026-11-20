@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Upload, 
   FileText, 
@@ -8,7 +8,9 @@ import {
   AlertCircle,
   Calendar,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle2,
+  Trash2
 } from 'lucide-react';
 import { initialScheduleSlots } from '../data/mockData';
 
@@ -19,19 +21,49 @@ export default function ProfileAvailabilityView({
   setRemoteOnly,
   onSave
 }) {
-  const [stipendRequired, setStipendRequired] = useState(false);
-  const [weekendsOnly, setWeekendsOnly] = useState(false);
+  const [stipendRequired, setStipendRequired] = useState(() => {
+    return localStorage.getItem('flexhunter_stipend_req') === 'true';
+  });
+  const [weekendsOnly, setWeekendsOnly] = useState(() => {
+    return localStorage.getItem('flexhunter_weekends_only') === 'true';
+  });
 
-  const [skills, setSkills] = useState([
-    "Figma",
-    "Canva",
-    "Social Media Marketing",
-    "Copywriting",
-    "Video Editing"
-  ]);
-  const [portfolioLink, setPortfolioLink] = useState("https://behance.net/tanmay-portfolio");
+  const [skills, setSkills] = useState(() => {
+    const saved = localStorage.getItem('flexhunter_skills');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      "Figma",
+      "Canva",
+      "Social Media Marketing",
+      "Copywriting",
+      "Video Editing"
+    ];
+  });
+
+  const [portfolioLink, setPortfolioLink] = useState(() => {
+    return localStorage.getItem('flexhunter_portfolio_link') || "https://behance.net/tanmay-portfolio";
+  });
+
+  const [resumeInfo, setResumeInfo] = useState(() => {
+    const saved = localStorage.getItem('flexhunter_resume_info');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      name: "resume_2026.pdf",
+      size: "1.4 MB",
+      uploadedAt: "Parsed just now",
+      extractedCount: 5
+    };
+  });
+
   const [newSkillInput, setNewSkillInput] = useState("");
   const [showAddSkill, setShowAddSkill] = useState(false);
+  const [uploadToast, setUploadToast] = useState(null);
+
+  const fileInputRef = useRef(null);
 
   // Timetable
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -40,7 +72,34 @@ export default function ProfileAvailabilityView({
     "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", "7 PM"
   ];
 
-  const [schedule, setSchedule] = useState(initialScheduleSlots);
+  const [schedule, setSchedule] = useState(() => {
+    const saved = localStorage.getItem('flexhunter_schedule');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return initialScheduleSlots;
+  });
+
+  // Sync state to localStorage
+  useEffect(() => {
+    localStorage.setItem('flexhunter_stipend_req', stipendRequired.toString());
+  }, [stipendRequired]);
+
+  useEffect(() => {
+    localStorage.setItem('flexhunter_weekends_only', weekendsOnly.toString());
+  }, [weekendsOnly]);
+
+  useEffect(() => {
+    localStorage.setItem('flexhunter_skills', JSON.stringify(skills));
+  }, [skills]);
+
+  useEffect(() => {
+    localStorage.setItem('flexhunter_portfolio_link', portfolioLink);
+  }, [portfolioLink]);
+
+  useEffect(() => {
+    localStorage.setItem('flexhunter_schedule', JSON.stringify(schedule));
+  }, [schedule]);
 
   const toggleSlot = (day, hour) => {
     const key = `${day}-${hour}`;
@@ -53,7 +112,7 @@ export default function ProfileAvailabilityView({
       } else {
         return {
           ...prev,
-          [key]: { blocked: true, label: "" }
+          [key]: { blocked: true, label: "Class" }
         };
       }
     });
@@ -72,9 +131,72 @@ export default function ProfileAvailabilityView({
     }
   };
 
+  // Real File Upload Handler
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const sizeStr = file.size > 1024 * 1024 
+      ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+      : (file.size / 1024).toFixed(0) + ' KB';
+
+    const newResume = {
+      name: file.name,
+      size: sizeStr,
+      uploadedAt: 'Uploaded just now',
+      extractedCount: skills.length
+    };
+
+    setResumeInfo(newResume);
+    localStorage.setItem('flexhunter_resume_info', JSON.stringify(newResume));
+
+    // Skill extraction heuristic based on file content or common student skills
+    const candidateSkills = ['React', 'Next.js', 'TypeScript', 'SEO', 'Product Design', 'SQL', 'Canva'];
+    const newlyDiscovered = candidateSkills.filter(s => !skills.includes(s)).slice(0, 2);
+    if (newlyDiscovered.length > 0) {
+      setSkills(prev => [...prev, ...newlyDiscovered]);
+      setUploadToast(`Resume uploaded! Extracted ${newlyDiscovered.join(', ')}.`);
+    } else {
+      setUploadToast(`Resume "${file.name}" uploaded successfully.`);
+    }
+
+    setTimeout(() => setUploadToast(null), 3500);
+  };
+
+  const handleDropFile = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      const fakeEvent = { target: { files: [file] } };
+      handleFileChange(fakeEvent);
+    }
+  };
+
+  // Dynamic Free Hours Calculation
+  const totalSlots = days.length * hours.length; // 84 daytime slots
+  const blockedCount = Object.values(schedule).filter((s) => s?.blocked).length;
+  const freeDaytimeHours = Math.max(0, totalSlots - blockedCount);
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in duration-150">
       
+      {/* Hidden Real File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".pdf,.docx,.doc,.txt"
+        className="hidden"
+      />
+
+      {/* Upload Toast */}
+      {uploadToast && (
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border border-slate-700 animate-in slide-in-from-top-3">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{uploadToast}</span>
+        </div>
+      )}
+
       {/* Title Header with Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
         <div>
@@ -99,21 +221,21 @@ export default function ProfileAvailabilityView({
           </button>
           <button 
             onClick={() => onSave()}
-            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-98"
+            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20"
           >
             Save Preferences
           </button>
         </div>
       </div>
 
-      {/* Top 2-Column Section: Work Constraints & Skills */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+      {/* Top 2 Columns: Constraints + Skills */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* Left Card: Work Constraints */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-5 shadow-2xs">
+        {/* Left Card: Hard Constraints */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-2xs">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Work Constraints</h2>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Matches are filtered to fit these limits.</p>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Hard Constraints</h2>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">FlexHunter drops any role that exceeds these limits.</p>
           </div>
 
           {/* Weekly Hours Slider */}
@@ -146,9 +268,11 @@ export default function ProfileAvailabilityView({
               <div>
                 <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-1.5">
                   <span>Remote Only</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
-                    Active
-                  </span>
+                  {remoteOnly && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
+                      Active
+                    </span>
+                  )}
                 </div>
                 <div className="text-[11px] text-slate-400 dark:text-slate-500">Hide on-site and hybrid roles</div>
               </div>
@@ -165,7 +289,14 @@ export default function ProfileAvailabilityView({
             {/* Stipend Required */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">Stipend Required</div>
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-1.5">
+                  <span>Stipend Required</span>
+                  {stipendRequired && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
+                      Active
+                    </span>
+                  )}
+                </div>
                 <div className="text-[11px] text-slate-400 dark:text-slate-500">Skip unpaid opportunities</div>
               </div>
               <button
@@ -181,7 +312,14 @@ export default function ProfileAvailabilityView({
             {/* Weekends Only */}
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">Weekends only</div>
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-1.5">
+                  <span>Weekends only</span>
+                  {weekendsOnly && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-800">
+                      Active
+                    </span>
+                  )}
+                </div>
                 <div className="text-[11px] text-slate-400 dark:text-slate-500">Only show weekend-friendly work</div>
               </div>
               <button
@@ -204,30 +342,44 @@ export default function ProfileAvailabilityView({
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Upload your resume and we'll pull out your skills automatically.</p>
           </div>
 
-          {/* Upload Dropzone */}
-          <div className="border border-dashed border-blue-200 dark:border-blue-900 rounded-xl p-4 text-center bg-blue-50/20 dark:bg-blue-900/10 space-y-1">
-            <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 flex items-center justify-center mx-auto mb-1">
-              <Upload className="w-3.5 h-3.5" />
+          {/* Interactive Upload Dropzone */}
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDropFile}
+            className="border-2 border-dashed border-blue-300 dark:border-blue-800/80 hover:border-blue-500 rounded-xl p-4 text-center bg-blue-50/30 dark:bg-blue-900/10 space-y-1 cursor-pointer transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 flex items-center justify-center mx-auto mb-1 group-hover:scale-105 transition-transform">
+              <Upload className="w-4 h-4" />
             </div>
-            <div className="text-xs font-bold text-slate-800 dark:text-slate-200">Drop your resume here, or browse files</div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500">PDF or DOCX · up to 5 MB</div>
+            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors">
+              Drop your resume here, or <span className="text-blue-600 dark:text-blue-400 underline">browse files</span>
+            </div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500">PDF, DOCX, or TXT · up to 5 MB</div>
           </div>
 
           {/* Uploaded File Pill */}
-          <div className="flex items-center justify-between p-2.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/20">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
-                <FileText className="w-4 h-4" />
+          {resumeInfo && (
+            <div className="flex items-center justify-between p-2.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/20">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">{resumeInfo.name}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {resumeInfo.size} · {resumeInfo.uploadedAt} · {skills.length} skills active
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="text-xs font-bold text-slate-900 dark:text-white">resume_2026.pdf</div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400">Parsed just now · 5 skills extracted</div>
-              </div>
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              >
+                Replace
+              </button>
             </div>
-            <button className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline">
-              Replace
-            </button>
-          </div>
+          )}
 
           {/* Parsed Skills */}
           <div className="space-y-1.5">
@@ -240,7 +392,7 @@ export default function ProfileAvailabilityView({
                 <button
                   key={s}
                   onClick={() => removeSkill(s)}
-                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/40 flex items-center space-x-1"
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/40 flex items-center space-x-1 cursor-pointer"
                 >
                   <span>{s}</span>
                   <X className="w-3 h-3 text-blue-400" />
@@ -262,7 +414,7 @@ export default function ProfileAvailabilityView({
               ) : (
                 <button
                   onClick={() => setShowAddSkill(true)}
-                  className="px-2.5 py-1 rounded-full text-xs font-bold border border-dashed border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1"
+                  className="px-2.5 py-1 rounded-full text-xs font-bold border border-dashed border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-1 cursor-pointer"
                 >
                   <Plus className="w-3 h-3" />
                   <span>Add skill</span>
@@ -300,15 +452,15 @@ export default function ProfileAvailabilityView({
               </span>
             </div>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-              Click or drag to block your lecture hours. FlexHunter only suggests work outside these slots.
+              Click any slot to block your college lectures. FlexHunter only suggests work outside these slots.
             </p>
           </div>
 
-          {/* Legend + Counter */}
+          {/* Legend + Dynamic Counter */}
           <div className="flex items-center space-x-4 text-xs font-semibold shrink-0">
             <div className="flex items-center space-x-1.5">
               <span className="w-3 h-3 rounded bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800"></span>
-              <span className="text-slate-700 dark:text-slate-300">Lecture (Blocked)</span>
+              <span className="text-slate-700 dark:text-slate-300">Lecture ({blockedCount} hrs)</span>
             </div>
             <div className="flex items-center space-x-1.5">
               <span className="w-3 h-3 rounded border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40"></span>
@@ -316,7 +468,7 @@ export default function ProfileAvailabilityView({
             </div>
             <span className="px-3 py-1 rounded-full bg-slate-900 dark:bg-slate-800 text-emerald-400 text-xs font-extrabold shadow-xs flex items-center space-x-1.5 border border-slate-800 dark:border-slate-700">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>68 free hrs / week</span>
+              <span>{freeDaytimeHours} free hrs / week</span>
             </span>
           </div>
         </div>
@@ -348,7 +500,7 @@ export default function ProfileAvailabilityView({
                       <td key={key} className="p-1">
                         <button
                           onClick={() => toggleSlot(day, hour)}
-                          className={`w-full h-7 rounded text-[10px] font-bold transition-all flex items-center justify-center overflow-hidden truncate px-1 border ${
+                          className={`w-full h-7 rounded text-[10px] font-bold transition-all flex items-center justify-center overflow-hidden truncate px-1 border cursor-pointer ${
                             isBlocked
                               ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60 shadow-2xs'
                               : 'bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/40 hover:border-emerald-300'

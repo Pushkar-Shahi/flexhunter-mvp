@@ -126,6 +126,75 @@ export default function App() {
     showToast(`Application submitted! Logged into "Applied" on your Kanban.`);
   };
 
+  // Export Data Backup as JSON
+  const handleExportData = () => {
+    const backup = {
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      maxHours,
+      remoteOnly,
+      theme,
+      applications,
+      skills: JSON.parse(localStorage.getItem('flexhunter_skills') || '[]'),
+      schedule: JSON.parse(localStorage.getItem('flexhunter_schedule') || '{}'),
+      resumeInfo: JSON.parse(localStorage.getItem('flexhunter_resume_info') || '{}')
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `flexhunter_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Data exported successfully!');
+  };
+
+  // Import Data Backup from JSON
+  const handleImportData = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.applications && Array.isArray(data.applications)) {
+          setApplications(data.applications);
+        }
+        if (data.maxHours) {
+          setMaxHours(data.maxHours);
+        }
+        if (data.theme) {
+          setTheme(data.theme);
+        }
+        if (data.skills) {
+          localStorage.setItem('flexhunter_skills', JSON.stringify(data.skills));
+        }
+        if (data.schedule) {
+          localStorage.setItem('flexhunter_schedule', JSON.stringify(data.schedule));
+        }
+        if (data.resumeInfo) {
+          localStorage.setItem('flexhunter_resume_info', JSON.stringify(data.resumeInfo));
+        }
+        showToast('Backup restored successfully!');
+      } catch (err) {
+        showToast('Error parsing JSON backup file.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Reset to Demo Data
+  const handleResetData = () => {
+    if (window.confirm('Reset FlexHunter to default demo state?')) {
+      localStorage.clear();
+      setApplications(initialApplications);
+      setMaxHours(15);
+      setTheme('light');
+      showToast('Reset to default demo data.');
+    }
+  };
+
   const getBreadcrumb = () => {
     switch (activeView) {
       case 'settings':
@@ -175,6 +244,9 @@ export default function App() {
             setExtensionTargetJob(initialJobsData[1]);
             setIsExtensionOpen(true);
           }}
+          onExportData={handleExportData}
+          onImportData={handleImportData}
+          onResetData={handleResetData}
         />
 
         {/* Content View Container */}
