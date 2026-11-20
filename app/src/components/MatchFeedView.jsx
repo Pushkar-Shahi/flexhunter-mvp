@@ -149,10 +149,10 @@ export default function MatchFeedView({
                 <div
                   key={job.id}
                   onClick={() => setSelectedJob(job)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white dark:bg-slate-900 relative ${
+                  className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 relative hover:-translate-y-0.5 hover:shadow-md ${
                     isSelected
-                      ? 'border-blue-500 ring-2 ring-blue-500/15 dark:ring-blue-500/30 shadow-sm'
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-2xs'
+                      ? 'border-blue-500 ring-2 ring-blue-500/20 dark:ring-blue-500/30 shadow-md border-l-4 border-l-blue-600'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">

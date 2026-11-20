@@ -41,10 +41,10 @@ export default function ExtensionSimulationView({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
       
       {/* Simulated Browser Frame (Exact Match to Image 4) */}
-      <div className="bg-slate-200 dark:bg-slate-900 rounded-2xl w-full max-w-6xl shadow-2xl border border-slate-300 dark:border-slate-800 overflow-hidden flex flex-col my-auto max-h-[95vh]">
+      <div className="bg-slate-200 dark:bg-slate-900 rounded-2xl w-full max-w-6xl shadow-2xl border border-slate-300 dark:border-slate-800 overflow-hidden flex flex-col my-auto max-h-[95vh] animate-in zoom-in-95 duration-200">
         
         {/* Browser Chrome Header */}
         <div className="px-4 py-2.5 bg-slate-200 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-800 flex items-center space-x-3 shrink-0">

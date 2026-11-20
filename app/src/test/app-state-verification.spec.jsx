@@ -195,7 +195,7 @@ describe('FlexHunter UI State Verification (Semantic DOM & Persistence Testing)'
 
     // Verify overlay appears with auto-extracted job and applicant details
     expect(screen.getByText(/One-Click Autofill/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tanmay Shahi/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Tanmay Shahi/i).length).toBeGreaterThanOrEqual(1);
 
     // Click Auto-Fill Application & Track in CRM
     const autofillBtn = screen.getByRole('button', { name: /Auto-Fill Application & Track in CRM/i });

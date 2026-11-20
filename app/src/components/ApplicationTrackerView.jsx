@@ -318,7 +318,7 @@ export default function ApplicationTrackerView({
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, card.id)}
                     onDragEnd={() => { setDraggedCardId(null); setDragOverCol(null); }}
-                    className={`bg-white dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700/80 p-3.5 shadow-2xs space-y-3 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-all relative group cursor-grab active:cursor-grabbing ${draggedCardId === card.id ? 'opacity-40 scale-98' : ''}`}
+                    className={`bg-white dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700/80 p-3.5 shadow-2xs space-y-3 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative group cursor-grab active:cursor-grabbing ${draggedCardId === card.id ? 'opacity-40 scale-98' : ''}`}
                   >
                     {/* Top Row: Company Name & Controls */}
                     <div className="flex items-start justify-between">
